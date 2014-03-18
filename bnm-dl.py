@@ -35,6 +35,13 @@ c.setopt(c.WRITEFUNCTION, www.body_callback)
 c.perform()
 c.close()
 
+www2 = PobierzStrone()
+c2 = pycurl.Curl()
+c2.setopt(c2.URL, 'http://vod.tvp.pl/audycje/historia/bylo-nie-minelo')
+c2.setopt(c2.WRITEFUNCTION, www2.body_callback)
+c2.perform()
+c2.close()
+
 class WczytajFilmy:
 
     def pobierzWybrany(self, widget, data=None):
@@ -57,7 +64,7 @@ class WczytajFilmy:
                 if format[u'url'].find('video-'+self.quality+'.mp4')>=0:
                     url = format[u'url']
             # bylo-nie-minelo-YYYYMMDD.mp4 
-            fn = re.findall(': ([0-9]{2})\.([0-9]{2})\.([0-9]{4})', tytul_odcinka)
+            fn = re.findall('([0-9]{2})\.([0-9]{2})\.([0-9]{4})', tytul_odcinka)
             file_name = 'bylo-nie-minelo-'+fn[0][2]+fn[0][1]+fn[0][0]+'.mp4'
             u = urllib2.urlopen(url)
             f = open(file_name, 'wb')
@@ -98,14 +105,24 @@ class WczytajFilmy:
         self.label.set_use_markup(True)
         self.hbox = gtk.VBox(homogeneous=True, spacing=10)
         self.window.add(self.hbox)
-        self.hbox.pack_start(self.label);
+        self.hbox.pack_start(self.label)
         self.window.connect("destroy", self.destroy)
         self.window.set_border_width(5)
 
         self.BNMlinks = re.findall('<a href="/([0-9]{8})/[0-9]{8}">[\s]*<span class="image border-radius-5">', www.contents)
         self.BNMtitles = re.findall('<span class="title">([^>^<]*)</span>', www.contents)
         
+        self.BNMlinks2 = re.findall('<strong class="fullTitle">[\s]*<a href="/audycje/historia/bylo-nie-minelo/wideo/[^/]*/([0-9]{6,10})" title="[^"]*">', www2.contents)    
+        # print "Linków: "+str(len(self.BNMlinks2))
+        # print self.BNMlinks2
+        self.BNMtitles2 = re.findall('<strong class="fullTitle">[\s]*<a href="[^"]*" title="([^"]*)">', www2.contents)
+        # print "Tytułów: "+str(len(self.BNMtitles2))
+        # print self.BNMtitles2
+
         if self.BNMlinks:
+            if self.BNMlinks2 and self.BNMtitles2 and len(self.BNMlinks2) == len(self.BNMtitles2):
+                self.BNMlinks = self.BNMlinks + self.BNMlinks2
+                self.BNMtitles = self.BNMtitles + self.BNMtitles2
             self.combobox_quality = gtk.combo_box_new_text()
             self.combobox_quality.insert_text(0, 'Jakość 1 - 320x180px')
             self.combobox_quality.insert_text(1, 'Jakość 2 - 398x224px')
