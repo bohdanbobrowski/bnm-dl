@@ -28,19 +28,21 @@ def get_resource_path(rel_path):
     abs_path_to_resource = os.path.abspath(rel_path_to_resource)
     return abs_path_to_resource
 
+"""
 www = PobierzStrone()
 c = pycurl.Curl()
 c.setopt(c.URL, 'http://regionalna.tvp.pl/14261059/bylo-nie-minelo-kronika-zwiadowcow-historii')
 c.setopt(c.WRITEFUNCTION, www.body_callback)
 c.perform()
 c.close()
+"""
 
-www2 = PobierzStrone()
-c2 = pycurl.Curl()
-c2.setopt(c2.URL, 'http://vod.tvp.pl/audycje/historia/bylo-nie-minelo')
-c2.setopt(c2.WRITEFUNCTION, www2.body_callback)
-c2.perform()
-c2.close()
+www = PobierzStrone()
+c = pycurl.Curl()
+c.setopt(c.URL, 'http://www.tvp.pl/historia/magazyny-historyczne/bylo-nie-minelo')
+c.setopt(c.WRITEFUNCTION, www.body_callback)
+c.perform()
+c.close()
 
 class WczytajFilmy:
 
@@ -109,20 +111,13 @@ class WczytajFilmy:
         self.window.connect("destroy", self.destroy)
         self.window.set_border_width(5)
 
-        self.BNMlinks = re.findall('<a href="/([0-9]{8})/[0-9]{8}">[\s]*<span class="image border-radius-5">', www.contents)
-        self.BNMtitles = re.findall('<span class="title">([^>^<]*)</span>', www.contents)
-        
-        self.BNMlinks2 = re.findall('<strong class="fullTitle">[\s]*<a href="/audycje/historia/bylo-nie-minelo/wideo/[^/]*/([0-9]{6,10})" title="[^"]*">', www2.contents)    
-        # print "Linków: "+str(len(self.BNMlinks2))
-        # print self.BNMlinks2
-        self.BNMtitles2 = re.findall('<strong class="fullTitle">[\s]*<a href="[^"]*" title="([^"]*)">', www2.contents)
-        # print "Tytułów: "+str(len(self.BNMtitles2))
-        # print self.BNMtitles2
+        # self.BNMlinks = [] + re.findall('<a href="/([0-9]{8})/[0-9]{8}">[\s]*<span class="image border-radius-5">', www.contents)      
+        # self.BNMtitles = [] + re.findall('<span class="title">[\s]*([^>^<]*)[\s]*</span>', www.contents)
+       
+        self.BNMlinks = [] + re.findall('<a class="th mb10" href="http://www.tvp.pl/vod/audycje/historia/bylo-nie-minelo/wideo/[^/]*/([0-9]{6,10})">', www.contents)    
+        self.BNMtitles = [] + re.findall('<a class="th mb10" href="http://www.tvp.pl/vod/audycje/historia/bylo-nie-minelo/wideo/[^"]*">([^<^>]*)', www.contents)
 
-        if self.BNMlinks:
-            if self.BNMlinks2 and self.BNMtitles2 and len(self.BNMlinks2) == len(self.BNMtitles2):
-                self.BNMlinks = self.BNMlinks + self.BNMlinks2
-                self.BNMtitles = self.BNMtitles + self.BNMtitles2
+        if self.BNMlinks and len(self.BNMlinks) == len(self.BNMtitles):
             self.combobox_quality = gtk.combo_box_new_text()
             self.combobox_quality.insert_text(0, 'Jakość 1 - 320x180px')
             self.combobox_quality.insert_text(1, 'Jakość 2 - 398x224px')
