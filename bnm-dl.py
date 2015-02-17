@@ -39,7 +39,7 @@ c.close()
 
 www = PobierzStrone()
 c = pycurl.Curl()
-c.setopt(c.URL, 'http://www.tvp.pl/historia/magazyny-historyczne/bylo-nie-minelo')
+c.setopt(c.URL, 'http://vod.tvp.pl/vod/seriesAjax?type=series&nodeId=356&recommendedId=0&sort=&page=0&pageSize=200')
 c.setopt(c.WRITEFUNCTION, www.body_callback)
 c.perform()
 c.close()
@@ -49,31 +49,23 @@ class WczytajFilmy:
     def pobierzWybrany(self, widget, data=None):
         if self.combobox_quality.get_active() >= 0:
             self.quality = str(self.combobox_quality.get_active() + 1)
-            print "Wybrana jakość: "+self.quality
         if self.combobox.get_active() >= 0:
-            BNMfilelist = 'http://regionalna.tvp.pl/sess/html5player_iframe.php?object_id=' + self.BNMlinks[self.combobox.get_active()] + "&width=100%&height=100%&autoplay=true&mobile=true/html5player_iframe.html"
             tytul_odcinka = self.BNMtitles[self.combobox.get_active()]
-            print "Pobieramy listę plików: "+BNMfilelist
-            BNMjson = PobierzStrone()
-            BNMcurl = pycurl.Curl()
-            BNMcurl.setopt(c.URL, BNMfilelist)
-            BNMcurl.setopt(c.WRITEFUNCTION, BNMjson.body_callback)
-            BNMcurl.perform()
-            BNMcurl.close()
-            BNMjsonOBJ = json.loads(BNMjson.contents)
-            url = ''
-            for format in BNMjsonOBJ[u'token'][u'formats']:
-                if format[u'url'].find('video-'+self.quality+'.mp4')>=0:
-                    url = format[u'url']
-            # bylo-nie-minelo-YYYYMMDD.mp4 
+            www_filmu = PobierzStrone()
+            c = pycurl.Curl()
+            c.setopt(c.URL, 'www.tvp.pl/sess/tvplayer.php?object_id='+self.BNMlinks[self.combobox.get_active()])
+            c.setopt(c.WRITEFUNCTION, www_filmu.body_callback)
+            c.perform()
+            c.close()
+            url = re.findall("{src:'([^']*)', type: 'video/mp4'}",www_filmu.contents)[0]
+            url = url.replace('video-4.mp4','video-'+str(self.quality)+'.mp4')
+            print url
             fn = re.findall('([0-9]{2})\.([0-9]{2})\.([0-9]{4})', tytul_odcinka)
             file_name = 'bylo-nie-minelo-'+fn[0][2]+fn[0][1]+fn[0][0]+'.mp4'
             u = urllib2.urlopen(url)
             f = open(file_name, 'wb')
             meta = u.info()
             file_size = int(meta.getheaders("Content-Length")[0])
-            print "Tytuł odcinka: "+tytul_odcinka
-            print("Pobieranie: {0} Rozmiar: {1}".format(url, file_size))            
             self.pbar.set_text('Pobieranie: "'+tytul_odcinka+'"')
             file_size_dl = 0
             block_sz = 8192
@@ -91,12 +83,10 @@ class WczytajFilmy:
                 while gtk.events_pending():
                     gtk.main_iteration()
             f.close()
-            print "\nKoniec!"
             self.pbar.set_text('Zakończono pobieranie pliku '+file_name)
             return True
 
     def destroy(self, widget, data=None):
-        print "destroy signal occurred"
         gtk.main_quit()
 
     def __init__(self):
@@ -114,8 +104,10 @@ class WczytajFilmy:
         # self.BNMlinks = [] + re.findall('<a href="/([0-9]{8})/[0-9]{8}">[\s]*<span class="image border-radius-5">', www.contents)      
         # self.BNMtitles = [] + re.findall('<span class="title">[\s]*([^>^<]*)[\s]*</span>', www.contents)
        
-        self.BNMlinks = [] + re.findall('<a class="th mb10" href="http://www.tvp.pl/vod/audycje/historia/bylo-nie-minelo/wideo/[^/]*/([0-9]{6,10})">', www.contents)    
-        self.BNMtitles = [] + re.findall('<a class="th mb10" href="http://www.tvp.pl/vod/audycje/historia/bylo-nie-minelo/wideo/[^"]*">([^<^>]*)', www.contents)
+        # self.BNMlinks = [] + re.findall('<a class="th mb10" href="http://www.tvp.pl/vod/audycje/historia/bylo-nie-minelo/wideo/[^/]*/([0-9]{6,10})">', www.contents)    
+        # self.BNMtitles = [] + re.findall('<a class="th mb10" href="http://www.tvp.pl/vod/audycje/historia/bylo-nie-minelo/wideo/[^"]*">([^<^>]*)', www.contents)
+        self.BNMlinks = [] + re.findall('<strong class="shortTitle">[\s]*<a href="/audycje/historia/bylo-nie-minelo/wideo/[^/]*/([0-9]{6,10})"', www.contents)    
+        self.BNMtitles = [] + re.findall('<strong class="shortTitle">[\s]*<a href="/audycje/historia/bylo-nie-minelo/wideo/[^"]*" title="([^"]*)', www.contents)
 
         if self.BNMlinks and len(self.BNMlinks) == len(self.BNMtitles):
             self.combobox_quality = gtk.combo_box_new_text()
@@ -131,26 +123,19 @@ class WczytajFilmy:
             for (i,title) in enumerate(self.BNMtitles):
                 self.BNMtitles[i] = title.strip()
                 self.combobox.insert_text(i, title.strip())
-                # http://regionalna.tvp.pl/sess/html5player_iframe.php?object_id=14410596&width=100%&height=100%&autoplay=true&mobile=true/html5player_iframe.html
-                # /14410596/16032014
-                # http://46.28.242.12/token/video/vod/14410596/20140316/1440581241/17119a4d-4944-443f-a4c1-3e3a199dd624/video-6.mp4
             self.combobox.set_active(0)
             self.hbox.pack_start(self.combobox_quality)
             self.hbox.pack_start(self.combobox)
             self.button = gtk.Button("Pobierz wybrany odcinek")
         else:
             self.button = gtk.Button("Nie znaleziono żadnych filmów!")
-
         self.pbar = gtk.ProgressBar()
         self.hbox.pack_start(self.pbar)
         self.pbar.set_text('')
         self.pbar.show()
-
         self.button.connect("clicked", self.pobierzWybrany, None)
-        # self.button.connect_object("clicked", gtk.Widget.destroy, self.window)
         self.hbox.pack_start(self.button)        
-        self.button.show()        
-       
+        self.button.show()               
         self.window.show_all()
 
     def main(self):
