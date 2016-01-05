@@ -10,6 +10,7 @@ import re
 import sys
 import pycurl
 import urllib2
+import HTMLParser
 
 # Parametry podstawowe:
 SAVE_ALL = 0
@@ -69,25 +70,28 @@ def pobierzOdcinek(odcinek):
     url = url.replace('video-4.mp4','video-6.mp4')
     fn = re.findall('token/video/vod/'+str(odcinek[0])+'/([0-9]{4})([0-9]{2})([0-9]{2})', www_filmu.contents)
     file_name = 'bylo-nie-minelo-'+fn[0][0]+fn[0][1]+fn[0][2]+'-'+tytul_odcinka+'.mp4'
-    print url
-    print file_name
-    u = urllib2.urlopen(url)
-    f = open(file_name, 'wb')
-    meta = u.info()
-    file_size = int(meta.getheaders("Content-Length")[0])
-    file_size_dl = 0
-    block_sz = 8192
-    while True:
-        buffer = u.read(block_sz)
-        if not buffer:
-            break
-        file_size_dl += len(buffer)
-        f.write(buffer)
-        p = float(file_size_dl) / file_size
-        status = r"{0}  [{1:.2%}]".format(file_size_dl, p)
-        status = status + chr(8)*(len(status)+1)                
-        sys.stdout.write(status)
-    f.close()
+    if(os.path.isfile(file_name)):
+        print '[!] Plik o tej nazwie istnieje w katalogu docelowym'
+    else:
+        print url
+        print file_name
+        u = urllib2.urlopen(url)
+        f = open(file_name, 'wb')
+        meta = u.info()
+        file_size = int(meta.getheaders("Content-Length")[0])
+        file_size_dl = 0
+        block_sz = 8192
+        while True:
+            buffer = u.read(block_sz)
+            if not buffer:
+                break
+            file_size_dl += len(buffer)
+            f.write(buffer)
+            p = float(file_size_dl) / file_size
+            status = r"{0}  [{1:.2%}]".format(file_size_dl, p)
+            status = status + chr(8)*(len(status)+1)                
+            sys.stdout.write(status)
+        f.close()
     return True
 
 def get_resource_path(rel_path):
@@ -98,15 +102,17 @@ def get_resource_path(rel_path):
 
 www = PobierzStrone()
 c = pycurl.Curl()
-c.setopt(c.URL, 'http://vod.tvp.pl/vod/seriesAjax?type=series&nodeId=356&recommendedId=0&sort=&page=0&pageSize=40')
+c.setopt(c.URL, 'http://vod.tvp.pl/356/bylo-nie-minelo')
 c.setopt(c.WRITEFUNCTION, www.body_callback)
 c.perform()
 c.close()
 
-bnm = [] + re.findall('<strong class="shortTitle">[\s]*<a href="/audycje/historia/bylo-nie-minelo/wideo/[^/]*/([0-9]{6,10})" title="([^"]*)', www.contents)
+bnm = [] + re.findall('<strong class="fullTitle">[\s]*<a href="\/([^\/]+)\/([^"]+)" title="([^"]+)', www.contents)
 
 for b in bnm:
     Separator('#')
+    h = HTMLParser.HTMLParser()
+    b = [b[0],h.unescape(b[1])]
     print b[1]
     if(Klawisz(SAVE_ALL) == 1):
         pobierzOdcinek(b)
