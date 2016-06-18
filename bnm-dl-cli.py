@@ -58,7 +58,7 @@ class PobierzStrone:
         self.contents = self.contents + buf
     
 def pobierzOdcinek(odcinek):
-    tytul_odcinka = odcinek[1].replace(' ','_')
+    tytul_odcinka = odcinek[1]
     www_filmu = PobierzStrone()
     c = pycurl.Curl()
     c.setopt(c.URL, 'www.tvp.pl/sess/tvplayer.php?object_id='+odcinek[0])
@@ -98,12 +98,12 @@ def get_resource_path(rel_path):
 
 www = PobierzStrone()
 c = pycurl.Curl()
-c.setopt(c.URL, 'http://vod.tvp.pl/vod/seriesAjax?type=series&nodeId=356&recommendedId=0&sort=&page=0&pageSize=40')
+c.setopt(c.URL, 'http://vod.tvp.pl/shared/listing.php?parent_id=356&page=1&type=video&order=release_date_long,-1&filter={%22playable%22:true}&direct=false&template=directory/listing.html&count=12')
 c.setopt(c.WRITEFUNCTION, www.body_callback)
 c.perform()
 c.close()
 
-bnm = [] + re.findall('<strong class="shortTitle">[\s]*<a href="/audycje/historia/bylo-nie-minelo/wideo/[^/]*/([0-9]{6,10})" title="([^"]*)', www.contents)
+bnm = [] + re.findall('<strong[\s]+class="shortTitle">[\s]*<a[\s]+href="/([0-9]{6,10})/([^"]+)"[\s]+title="([^"]*)', www.contents)
 
 for b in bnm:
     Separator('#')
