@@ -59,7 +59,6 @@ class PobierzStrone:
         self.contents = self.contents + buf
     
 def pobierzOdcinek(odcinek):
-    tytul_odcinka = odcinek[1]
     www_filmu = PobierzStrone()
     c = pycurl.Curl()
     c.setopt(c.URL, 'www.tvp.pl/sess/tvplayer.php?object_id='+odcinek[0])
@@ -68,8 +67,7 @@ def pobierzOdcinek(odcinek):
     c.close()
     url = re.findall("{src:'([^']*)', type: 'video/mp4'}",www_filmu.contents)[0]
     url = url.replace('video-4.mp4','video-6.mp4')
-    fn = re.findall('token/video/vod/'+str(odcinek[0])+'/([0-9]{4})([0-9]{2})([0-9]{2})', www_filmu.contents)
-    file_name = 'bylo-nie-minelo-'+fn[0][0]+fn[0][1]+fn[0][2]+'-'+tytul_odcinka+'.mp4'
+    file_name = odcinek[0]+'-'+odcinek[1]+'.mp4'
     if(os.path.isfile(file_name)):
         print '[!] Plik o tej nazwie istnieje w katalogu docelowym'
     else:
@@ -100,9 +98,15 @@ def get_resource_path(rel_path):
     abs_path_to_resource = os.path.abspath(rel_path_to_resource)
     return abs_path_to_resource
 
+bnmdl_url = 'http://vod.tvp.pl/356/bylo-nie-minelo'
 www = PobierzStrone()
 c = pycurl.Curl()
-c.setopt(c.URL, 'http://vod.tvp.pl/356/bylo-nie-minelo')
+c.setopt(c.URL, bnmdl_url)
+c.setopt(c.HEADER, 1);
+c.setopt(c.HTTPHEADER, ['Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: pl,en-us;q=0.7,en;q=0.3','Accept-Charset: ISO-8859-2,utf-8;q=0.7,*;q=0.7','Content-Type: application/x-www-form-urlencoded'])
+c.setopt(c.FOLLOWLOCATION, 1)
+c.setopt(c.USERAGENT,'Mozilla/5.0 (X11; U; Linux i686; pl; rv:1.8.0.3) Gecko/20060426 Firefox/1.5.0.3')
+c.setopt(c.REFERER, bnmdl_url)
 c.setopt(c.WRITEFUNCTION, www.body_callback)
 c.perform()
 c.close()
