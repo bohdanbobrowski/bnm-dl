@@ -114,7 +114,10 @@ c.setopt(c.HEADER, 1);
 c.setopt(c.HTTPHEADER, ['Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: pl,en-us;q=0.7,en;q=0.3','Accept-Charset: ISO-8859-2,utf-8;q=0.7,*;q=0.7','Content-Type: application/x-www-form-urlencoded'])
 c.setopt(c.FOLLOWLOCATION, 1)
 c.setopt(c.USERAGENT,'Mozilla/5.0 (X11; U; Linux i686; pl; rv:1.8.0.3) Gecko/20060426 Firefox/1.5.0.3')
-c.setopt(c.REFERER, 'https://vod.tvp.pl/website/bylo-nie-minelo,356')
+if '-o' in sys.argv or '-O' in sys.argv:
+    .setopt(c.REFERER, 'https://vod.tvp.pl/website/bylo-nie-minelo,356/video?order=oldest&sezon=0')
+else:
+    c.setopt(c.REFERER, 'https://vod.tvp.pl/website/bylo-nie-minelo,356')
 c.setopt(c.WRITEFUNCTION, www.body_callback)
 c.perform()
 c.close()
