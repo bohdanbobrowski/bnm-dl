@@ -115,7 +115,7 @@ c.setopt(c.HTTPHEADER, ['Accept: text/html,application/xhtml+xml,application/xml
 c.setopt(c.FOLLOWLOCATION, 1)
 c.setopt(c.USERAGENT,'Mozilla/5.0 (X11; U; Linux i686; pl; rv:1.8.0.3) Gecko/20060426 Firefox/1.5.0.3')
 if '-o' in sys.argv or '-O' in sys.argv:
-    .setopt(c.REFERER, 'https://vod.tvp.pl/website/bylo-nie-minelo,356/video?order=oldest&sezon=0')
+    c.setopt(c.REFERER, 'https://vod.tvp.pl/website/bylo-nie-minelo,356/video?order=oldest&sezon=0')
 else:
     c.setopt(c.REFERER, 'https://vod.tvp.pl/website/bylo-nie-minelo,356')
 c.setopt(c.WRITEFUNCTION, www.body_callback)
