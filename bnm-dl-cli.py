@@ -90,14 +90,15 @@ def pobierzOdcinek(chapter):
         block_sz = 8192
         while True:
             buffer = u.read(block_sz)
-            if not buffer:
-                break
+            # if not buffer:
             file_size_dl += len(buffer)
             f.write(buffer)
             p = float(file_size_dl) / file_size
             status = r"{0}  [{1:.2%}]".format(file_size_dl, p)
             status = status + chr(8)*(len(status)+1)                
             sys.stdout.write(status)
+            if file_size_dl >= file_size:
+                break
         f.close()
     return True
 
@@ -107,28 +108,34 @@ def get_resource_path(rel_path):
     abs_path_to_resource = os.path.abspath(rel_path_to_resource)
     return abs_path_to_resource
 
+def bnm_loop(bnm, id_x, data_x):
+    for b in bnm:
+        chapter = HTMLParser.HTMLParser().unescape(b[data_x])
+        chapter = json.loads(chapter)
+        chapter['id'] = b[id_x]
+        Separator('-')
+        print chapter['title']+' - '+chapter['episodeCount']
+        if(Klawisz(SAVE_ALL) == 1):
+            pobierzOdcinek(chapter)
+
 www = PobierzStrone()
 c = pycurl.Curl()
-c.setopt(c.URL, 'https://vod.tvp.pl/website/bylo-nie-minelo,356')
+if '-o' in sys.argv or '-O' in sys.argv:
+    bnm_url = 'https://vod.tvp.pl/website/bylo-nie-minelo,356/video?order=oldest&sezon=0';
+else:
+    bnm_url = 'https://vod.tvp.pl/website/bylo-nie-minelo,356';
+c.setopt(c.REFERER, bnm_url)
+c.setopt(c.URL, bnm_url)
 c.setopt(c.HEADER, 1);
 c.setopt(c.HTTPHEADER, ['Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: pl,en-us;q=0.7,en;q=0.3','Accept-Charset: ISO-8859-2,utf-8;q=0.7,*;q=0.7','Content-Type: application/x-www-form-urlencoded'])
 c.setopt(c.FOLLOWLOCATION, 1)
 c.setopt(c.USERAGENT,'Mozilla/5.0 (X11; U; Linux i686; pl; rv:1.8.0.3) Gecko/20060426 Firefox/1.5.0.3')
-if '-o' in sys.argv or '-O' in sys.argv:
-    c.setopt(c.REFERER, 'https://vod.tvp.pl/website/bylo-nie-minelo,356/video?order=oldest&sezon=0')
-else:
-    c.setopt(c.REFERER, 'https://vod.tvp.pl/website/bylo-nie-minelo,356')
 c.setopt(c.WRITEFUNCTION, www.body_callback)
 c.perform()
 c.close()
 
 bnm = [] + re.findall('<div class="item[^"]*"[\s]+data-id="([0-9]+)"[\s]+data-catch-up-days="([0-9]+)"[\s]+data-hover="([^"]+)"', www.contents)
-for b in bnm:
-    chapter = HTMLParser.HTMLParser().unescape(b[2])
-    chapter = json.loads(chapter)
-    chapter['id'] = b[0]
-    Separator('-')
-    print chapter['title']+' - '+chapter['episodeCount']
-    if(Klawisz(SAVE_ALL) == 1):
-        pobierzOdcinek(chapter)
-
+bnm_loop(bnm, 0, 2)
+if bnm == []:
+    bnm = [] + re.findall('data-hover="([^"]+)"[\s]+data-id="([0-9]+)"', www.contents)
+    bnm_loop(bnm, 1, 0)
