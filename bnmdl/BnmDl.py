@@ -6,7 +6,9 @@ import json
 import re
 import sys
 import pycurl
+import urllib
 import urllib2
+
 
 class PobierzStrone:
     def __init__(self):
@@ -14,6 +16,7 @@ class PobierzStrone:
 
     def body_callback(self, buf):
         self.contents = self.contents + buf
+
 
 class BnmDl:
 

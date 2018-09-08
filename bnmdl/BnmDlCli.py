@@ -5,10 +5,9 @@
 
 from lxml import etree
 import pycurl
-import urllib2
 import sys
 
-from BnmDl.BnmDl import PobierzStrone, BnmDl
+from bnmdl.BnmDl import PobierzStrone, BnmDl
 
 def main():
     SAVE_ALL = 0

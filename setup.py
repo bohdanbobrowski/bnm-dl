@@ -6,7 +6,7 @@
 from setuptools import setup
 
 setup(
-    name='BnmDl',
+    name='bnm-dl',
     version='0.1',
     description=u'Proste pobieranie pobieranie filmów z cyklu "Było... nie minęło. Kronika zwiadowców historii"',
     url="https://github.com/bohdanbobrowski/BnmDl",
@@ -14,16 +14,15 @@ setup(
     author_email="bohdanbobrowski@gmail.com",
     license="MIT",
     packages=[
-        "BnmDl"
+        "bnmdl"
     ],
     install_requires=[
         "lxml",
-        "urllib2",
         "pycurl"
     ],
     entry_points={
         'console_scripts': [
-            'bnmdl = BnmDl.BnmDlCli:main',
+            'bnmdl = bnmdl.BnmDlCli:main',
         ]
     },
 )
