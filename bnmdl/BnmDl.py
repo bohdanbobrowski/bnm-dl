@@ -53,7 +53,7 @@ class BnmDl(object):
             else:
                 return 0
 
-    def download_file(self, url, filename):
+    def download_file_requests(self, url, filename):
         r = requests.get(url, stream=True)
         with open(filename, 'wb') as f:
             for chunk in r.iter_content(chunk_size=1024):
@@ -61,7 +61,7 @@ class BnmDl(object):
                     f.write(chunk)
                     f.flush()
 
-    def download_file_old(self, url, filename):
+    def download_file(self, url, filename):
         u = urllib2.urlopen(url)
         f = open(filename, 'wb')
         meta = u.info()
