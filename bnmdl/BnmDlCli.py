@@ -7,7 +7,7 @@ from lxml import etree
 import pycurl
 import sys
 
-from bnmdl.BnmDl import PobierzStrone, BnmDl
+from bnmdl.BnmDl import BnmDl, PobierzStrone
 
 def main():
     SAVE_ALL = 0
@@ -16,10 +16,9 @@ def main():
 
     www = PobierzStrone()
     c = pycurl.Curl()
+    bnm_url = 'https://vod.tvp.pl/website/bylo-nie-minelo,356/video'
     if '-o' in sys.argv or '-O' in sys.argv:
-        bnm_url = 'https://vod.tvp.pl/website/bylo-nie-minelo,356/video?order=oldest&sezon=0';
-    else:
-        bnm_url = 'https://vod.tvp.pl/website/bylo-nie-minelo,356';
+        bnm_url += '?order=oldest&sezon=0'
     c.setopt(c.REFERER, bnm_url)
     c.setopt(c.URL, bnm_url)
     c.setopt(c.HEADER, 1);
@@ -31,14 +30,18 @@ def main():
     c.close()
 
     tree = etree.HTML(www.contents)
-    chapters = tree.xpath("//div[contains(@class, 'episode--mobile--itemInfo')]")
+    chapters = tree.xpath("//div[contains(@class, 'strefa-abo__item')]")
+
+    bnmdl = BnmDl()
+
     for chapter in chapters:
         link = next(iter(chapter.xpath('a') or []), None)
+        print link
         if link is not None:
             link = link.attrib['href'].split(',')
-        title = next(chapter.iter("h3")).text.strip()
+        title = next(chapter.iter("h4")).text.strip()
         if len(link) > 2:
-            Separator('-')
+            bnmdl.separator('-')
             print title, '-', link[2]
-            if(Klawisz(SAVE_ALL) == 1):
-                BnmDl.pobierzOdcinek(title, link)
+            if(bnmdl.klawisz(SAVE_ALL) == 1):
+                bnmdl.pobierzOdcinek(title, link)

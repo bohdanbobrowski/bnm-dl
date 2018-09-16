@@ -7,7 +7,7 @@ from setuptools import setup
 
 setup(
     name='bnm-dl',
-    version='0.1',
+    version='0.2.1',
     description=u'Proste pobieranie pobieranie filmów z cyklu "Było... nie minęło. Kronika zwiadowców historii"',
     url="https://github.com/bohdanbobrowski/BnmDl",
     author="Bohdan Bobrowski",

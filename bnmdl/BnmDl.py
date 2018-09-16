@@ -18,9 +18,8 @@ class PobierzStrone:
         self.contents = self.contents + buf
 
 
-class BnmDl:
-
-    def getin():
+class BnmDl(object):
+    def getin(self):
         if os.name == 'nt':
             from msvcrt import getch
             ch = getch()
@@ -33,23 +32,22 @@ class BnmDl:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return ch
 
-    def Separator(sign='-'):
+    def separator(self, sign='-'):
         rows, columns = os.popen('stty size', 'r').read().split()
         columns = int(columns)
         separator = ''
         for x in range(0, columns):
             separator = separator + sign
-        print
-        separator
+        print separator
 
-    def Klawisz(answer):
+    def klawisz(self, answer):
         if (answer == 1):
             return 1
         else:
             print "Czy zapisać odcinek? ([t]ak / [n]ie / [z]akoncz)"
-            key = getin()
+            key = self.getin()
             if key == 'z' or key == 'Z':
-                self.Separator('#')
+                self.separator('#')
                 exit()
             if key == 't' or key == 'T':
                 return 1
@@ -101,7 +99,7 @@ class BnmDl:
             f.close()
         return True
 
-    def get_resource_path(rel_path):
+    def get_resource_path(self, rel_path):
         dir_of_py_file = os.path.dirname(__file__)
         rel_path_to_resource = os.path.join(dir_of_py_file, rel_path)
         abs_path_to_resource = os.path.abspath(rel_path_to_resource)
