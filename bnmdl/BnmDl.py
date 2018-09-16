@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-import json
 import re
 import sys
 import pycurl
-import urllib
 import urllib2
+import requests
 
 
 class PobierzStrone:
@@ -54,6 +53,33 @@ class BnmDl(object):
             else:
                 return 0
 
+    def download_file(self, url, filename):
+        r = requests.get(url, stream=True)
+        with open(filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+                    f.flush()
+
+    def download_file_old(self, url, filename):
+        u = urllib2.urlopen(url)
+        f = open(filename, 'wb')
+        meta = u.info()
+        file_size = int(meta.getheaders("Content-Length")[0])
+        file_size_dl = 0
+        block_sz = 8192
+        while True:
+            buffer = u.read(block_sz)
+            file_size_dl += len(buffer)
+            f.write(buffer)
+            p = float(file_size_dl) / file_size
+            status = r"{0}  [{1:.2%}]".format(file_size_dl, p)
+            status = status + chr(8) * (len(status) + 1)
+            sys.stdout.write(status)
+            if file_size_dl >= file_size:
+                break
+        f.close()
+
     def pobierzOdcinek(self, title, link):
         www_filmu = PobierzStrone()
         c = pycurl.Curl()
@@ -80,23 +106,7 @@ class BnmDl(object):
         else:
             print url
             print file_name
-            u = urllib2.urlopen(url)
-            f = open(file_name, 'wb')
-            meta = u.info()
-            file_size = int(meta.getheaders("Content-Length")[0])
-            file_size_dl = 0
-            block_sz = 8192
-            while True:
-                buffer = u.read(block_sz)
-                file_size_dl += len(buffer)
-                f.write(buffer)
-                p = float(file_size_dl) / file_size
-                status = r"{0}  [{1:.2%}]".format(file_size_dl, p)
-                status = status + chr(8) * (len(status) + 1)
-                sys.stdout.write(status)
-                if file_size_dl >= file_size:
-                    break
-            f.close()
+            self.download_file(url, file_name)
         return True
 
     def get_resource_path(self, rel_path):
