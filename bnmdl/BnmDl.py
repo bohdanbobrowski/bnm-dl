@@ -52,15 +52,7 @@ class BnmDl(object):
                 return 1
             else:
                 return 0
-
-    def download_file_requests(self, url, filename):
-        r = requests.get(url, stream=True)
-        with open(filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    f.write(chunk)
-                    f.flush()
-
+1
     def download_file(self, url, filename):
         u = urllib2.urlopen(url)
         f = open(filename, 'wb')
