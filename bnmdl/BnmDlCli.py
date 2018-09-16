@@ -36,12 +36,11 @@ def main():
 
     for chapter in chapters:
         link = next(iter(chapter.xpath('a') or []), None)
-        print link
         if link is not None:
             link = link.attrib['href'].split(',')
-        title = next(chapter.iter("h4")).text.strip()
-        if len(link) > 2:
-            bnmdl.separator('-')
-            print title, '-', link[2]
-            if(bnmdl.klawisz(SAVE_ALL) == 1):
-                bnmdl.pobierzOdcinek(title, link)
+            title = next(chapter.iter("h4")).text.strip()
+            if len(link) > 2:
+                bnmdl.separator('-')
+                print title, '-', link[2]
+                if(bnmdl.klawisz(SAVE_ALL) == 1):
+                    bnmdl.pobierzOdcinek(title, link)
