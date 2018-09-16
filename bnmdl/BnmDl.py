@@ -3,11 +3,8 @@
 
 import os
 import re
-import sys
 import pycurl
-import urllib2
-import requests
-
+from download import download
 
 class PobierzStrone:
     def __init__(self):
@@ -52,25 +49,6 @@ class BnmDl(object):
                 return 1
             else:
                 return 0
-1
-    def download_file(self, url, filename):
-        u = urllib2.urlopen(url)
-        f = open(filename, 'wb')
-        meta = u.info()
-        file_size = int(meta.getheaders("Content-Length")[0])
-        file_size_dl = 0
-        block_sz = 8192
-        while True:
-            buffer = u.read(block_sz)
-            file_size_dl += len(buffer)
-            f.write(buffer)
-            p = float(file_size_dl) / file_size
-            status = r"{0}  [{1:.2%}]".format(file_size_dl, p)
-            status = status + chr(8) * (len(status) + 1)
-            sys.stdout.write(status)
-            if file_size_dl >= file_size:
-                break
-        f.close()
 
     def pobierzOdcinek(self, title, link):
         www_filmu = PobierzStrone()
@@ -98,7 +76,8 @@ class BnmDl(object):
         else:
             print url
             print file_name
-            self.download_file(url, file_name)
+            path = download(url, './'+file_name)
+            print path
         return True
 
     def get_resource_path(self, rel_path):
